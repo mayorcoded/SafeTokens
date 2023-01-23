@@ -89,6 +89,20 @@ describe("SafeTokensModule", function () {
     });
   })
 
+  describe("getWithdrawInfo", async function() {
+    it("should return correct withdraw info", async function() {
+      const { to, amount, nonce, safeTokensModule  } = await setupTests()
+      const hash =  await safeTokensModule.generateHash(amount, to, nonce)
+      const signature = await signer.signMessage(ethers.utils.arrayify(hash))
+      await safeTokensModule.addWithdrawInfo(to, amount, nonce, signature)
+      const expectedWithdrawInfo = await safeTokensModule.getWithdrawInfo(to)
+      expect(expectedWithdrawInfo.nonce).to.equal(nonce)
+      expect(expectedWithdrawInfo.amount).to.equal(amount)
+      expect(expectedWithdrawInfo.beneficiary).to.equal(to)
+      expect(expectedWithdrawInfo.signature).to.equal(signature)
+    });
+  })
+
   describe("withdrawTokens", function () {
     it("should fail when a user tries to reuse a signature", async function() {
       const { to, amount, nonce, safeTokensModule  } = await setupTests()
